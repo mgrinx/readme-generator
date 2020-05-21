@@ -5,8 +5,6 @@ import inquirer from "inquirer"
 import Rx from "rxjs"
 import { writeFile } from "fs"
 
-try {
-
 //response object
 const res = { }
 //answer handler object
@@ -15,13 +13,66 @@ let handle
 //formatter to remove count numbers from question names
 const f =v=> v.name.split(":")[0]
 
+//generate the readme
+const gen =r=> {
+    let badges = ""
+    if(r.badges.length>0) {
+        for(let v of r.badges) {
+            badges += `![${v}](https://img.shields.io/badge/dynamic/json?color=blue&label=${v}&query=%24.dependencies.${v}&url=https%3A%2F%2Fraw.githubusercontent.com%2F${r.user}%2F${r.repo}%2Fmaster%2Fpackage.json)\n`
+        }
+    }
+
+    let features = ""
+    if(r.features.length>0) {
+        for(let v of r.features) {
+            features += `- ${v}\n`
+        }
+    }
+
+    let user
+    axios.get('https://api.github.com/users/'+r.user, {
+        auth: {
+            username: r.user,
+            password: r.pass
+        },
+        method: "GET",
+    })
+    .then((u)=>{
+        user = u.data
+    })
+
+    let readme =
+`# ${r.title}
+${r.desc}  
+
+${r.screenshot ? "![Screenshot](Screenshot.png)" : ""}
+## Table of Contents
+- [Usage](#Usage)
+${r.features.length>0 ? "- [Features](#Features)" : ""}
+- [Contributors](#Contributors)
+- [Dependencies](#Dependencies)
+## Usage
+${r.usage}
+${r.features.length>0 ? "## Features" : ""}
+${features}
+## Contributors
+<iframe src="https://githubbadge.appspot.com/${r.user}" style="border: 0;height: 111px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
+
+${r.badges.length>0 ? "## Dependencies" : ""}
+${badges}
+`
+
+    writeFile("./README.md", readme, ()=>{
+        console.log("README.md is done!")
+        process.exit(0)
+    })
+}
+
 //callbacks object
 const cbs = {
-    next: value=>(handle[f(value)] || handle.default)(value),
-    error: error=>{ throw error },
-    complete: ()=>{
-        console.log(JSON.stringify(res))
-    }//TODO:add code to write to readme.md
+    next: v=>(handle[f(v)] || handle.default)(v),
+    error: err=>{ throw err },
+    complete: ()=>gen(res)
 }
 
 const prompts = new Rx.Subject()
@@ -40,13 +91,6 @@ const questions = {
             let fq = { ...q }
             fq.name = this.count(name)
             prompts.next(fq)
-        }
-        switch(this.groups[this.index].done) {
-            //TODO:expand functionality
-            case "wait":
-                break
-            case "next":
-                this.next()
         }
     },
     repeat() {
@@ -82,7 +126,12 @@ const questions = {
                 {
                     name: "repo",
                     type: "input",
-                    message: "Repo name:"
+                    message: "Repo name (exact):"
+                },
+                {
+                    name: "title",
+                    type: "input",
+                    message: "Title to put in header:"
                 },
                 {
                     name: "desc",
@@ -128,10 +177,27 @@ const questions = {
         {
             body: [
                 {
-                    name: "badges",
+                    name: "addBadgeList",
                     type: "confirm",
                     message: "Add badges?"
                 }
+            ],
+            done: "wait"
+        },
+
+        {
+            body: [
+                {
+                    name: "badge",
+                    type: "input",
+                    message: "Enter dependency name:"
+                },
+                {
+                    name: "addBadge",
+                    type: "confirm",
+                    message: "Add another badge?"
+                },
+
             ],
             done: "next"
         },
@@ -143,25 +209,23 @@ handle = {
     default: v=>{ res[f(v)] = res[f(v)] || v.answer },
 
     plurals: [
-        "feature"
+        "feature",
+        "badge"
     ],
 
-    populatePlurals(str) {
+    populatePlurals() {
         for(let p of this.plurals) {
-            res[p+"s"] = []
-            this[p] = v=>res[f(v)+"s"].push(v.answer)
+            res[p+"s"] = [] //add array to reponse object to hold multiple answers
+            this[p] = v=>res[f(v)+"s"].push(v.answer) //add basic plural handler
         }
     },
 
     //special handlers
-    addFeatureList: v=>v.answer ? groups.next() : groups.skip(),
-    addFeature: v=>v.answer ? groups.repeat() : groups.next()
+    addFeatureList: v=>v.answer ? questions.next() : questions.skip(),
+    addFeature: v=>v.answer ? questions.repeat() : questions.next(),
+    addBadgeList: v=>v.answer ? questions.next() : questions.skip(),
+    addBadge: v=>v.answer ? questions.repeat() : questions.next()
 }
 
 handle.populatePlurals()
 questions.next()
-
-} catch (err) {
-    console.error(err)
-    process.exit(1)
-}

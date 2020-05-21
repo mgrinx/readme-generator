@@ -29,19 +29,24 @@ const gen =async r=> {
         }
     }
 
-    let user
+    let contributorsRaw
     try {
-        user = await axios.get('https://api.github.com/users/'+r.user, {
+        contributorsRaw = await axios.get(`https://api.github.com/repos/${r.user}/${r.repo}/contributors`, {
             auth: {
                 username: r.user,
                 password: r.pass
             },
             method: "GET",
         })
-        user = user.data
+        contributorsRaw = contributorsRaw.data
     } catch {
         console.log("Error connecting to github, please check your login info.\nAborting...")
         process.exit()
+    }
+
+    let contributors = ""
+    for(let v of contributorsRaw) {
+        contributors += `<img src="${v.html_url}.png?size=24"> <a href="${v.html_url}">${v.login}</span></a>\n`
     }
 
     let readme =
@@ -59,10 +64,7 @@ ${r.usage}
 ${r.features.length>0 ? "## Features" : ""}
 ${features}
 ## Contributors
-<a href="https://github.com/${r.user}">
-  <img style="vertical-align:middle" src="https://github.com/${r.user}.png?size=50">
-  <span style="margin:auto">${user.name}</span>
-</a>
+${contributors}
 
 ${r.badges.length>0 ? "## Dependencies" : ""}
 ${badges}
@@ -160,7 +162,6 @@ const questions = {
                     message: "Add a list of features?"
                 },
             ],
-            done: "wait"
         },
 
         {
@@ -177,7 +178,6 @@ const questions = {
                 },
 
             ],
-            done: "wait"
         },
 
         {
@@ -188,7 +188,6 @@ const questions = {
                     message: "Add badges?"
                 }
             ],
-            done: "wait"
         },
 
         {
@@ -205,7 +204,6 @@ const questions = {
                 },
 
             ],
-            done: "next"
         },
     ],
 }

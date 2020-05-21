@@ -10,7 +10,7 @@ try {
 //response object
 const res = { }
 //answer handler object
-let handle;
+let handle
 
 //formatter to remove count numbers from question names
 const f =v=> v.name.split(":")[0]
@@ -25,10 +25,10 @@ const cbs = {
 }
 
 const prompts = new Rx.Subject()
-inquirer.prompt(prompts).ui.process.subscribe(cbs.next, cbs.error, cbs.complete);
+inquirer.prompt(prompts).ui.process.subscribe(cbs.next, cbs.error, cbs.complete)
 
-// question group object for moving thru batches of questions at a time
-const groups = {
+// question object for moving thru batches of questions at a time
+const questions = {
     index: -1,
     next() {
         ++this.index
@@ -37,13 +37,12 @@ const groups = {
         }
         for(let q of this.groups[this.index].body) {
             let { name } = q
-            let fq = {
-                ...q
-            }
+            let fq = { ...q }
             fq.name = this.count(name)
             prompts.next(fq)
         }
         switch(this.groups[this.index].done) {
+            //TODO:expand functionality
             case "wait":
                 break
             case "next":
@@ -67,13 +66,19 @@ const groups = {
 
     },
 
-    groups:
-    [
+    groups: [
         {
             body: [
                 {
-                  n
-                }
+                    name: "user",
+                    type: "input",
+                    message: "Github username:"
+                },
+                {
+                    name: "pass",
+                    type: "password",
+                    message: "Github password:"
+                },
                 {
                     name: "repo",
                     type: "input",
@@ -153,8 +158,8 @@ handle = {
     addFeature: v=>v.answer ? groups.repeat() : groups.next()
 }
 
-handle.populatePlurals();
-groups.next()
+handle.populatePlurals()
+questions.next()
 
 } catch (err) {
     console.error(err)

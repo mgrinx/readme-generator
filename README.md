@@ -10,7 +10,7 @@ A node app using inquirer that creates a simple readme for any git repo. (Yes, t
 `npm start`
 
 ## Contributors
-<img align="left" src="https://github.com/mgrinx.png?size=24"><a href="https://github.com/mgrinx">mgrinx</a><br>
+<img align="left" src="https://github.com/mgrinx.png?size=24"><a href="https://github.com/mgrinx">mgrinx</a><br>  
 <img align="left" src="https://github.com/mgrinx.png?size=24"><a href="https://github.com/mgrinx">mgrinx</a><br>
 
 ## Dependencies

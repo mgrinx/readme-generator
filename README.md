@@ -8,12 +8,13 @@ A node app using inquirer that creates a simple readme for any git repo. (Yes, t
 - [Contributors](#Contributors)
 - [Dependencies](#Dependencies)
 ## Usage
-### [Try it!]()
 `npm start`
 
-
 ## Contributors
-<iframe src="https://githubbadge.appspot.com/mgrinx" style="border: 0;height: 111px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
+<a href="https://github.com/mgrinx">
+  <img style="vertical-align:middle" src="https://github.com/mgrinx.png?size=50">
+  <span style="margin:auto">Misha Gringauze</span>
+</a>
 
 ## Dependencies
 ![axios](https://img.shields.io/badge/dynamic/json?color=blue&label=axios&query=%24.dependencies.axios&url=https%3A%2F%2Fraw.githubusercontent.com%2Fmgrinx%2Freadme-generator%2Fmaster%2Fpackage.json)

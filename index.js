@@ -14,7 +14,7 @@ let handle
 const f =v=> v.name.split(":")[0]
 
 //generate the readme
-const gen =r=> {
+const gen =async r=> {
     let badges = ""
     if(r.badges.length>0) {
         for(let v of r.badges) {
@@ -30,16 +30,19 @@ const gen =r=> {
     }
 
     let user
-    axios.get('https://api.github.com/users/'+r.user, {
-        auth: {
-            username: r.user,
-            password: r.pass
-        },
-        method: "GET",
-    })
-    .then((u)=>{
-        user = u.data
-    })
+    try {
+        user = await axios.get('https://api.github.com/users/'+r.user, {
+            auth: {
+                username: r.user,
+                password: r.pass
+            },
+            method: "GET",
+        })
+        user = user.data
+    } catch {
+        console.log("Error connecting to github, please check your login info.\nAborting...")
+        process.exit()
+    }
 
     let readme =
 `# ${r.title}
@@ -56,7 +59,10 @@ ${r.usage}
 ${r.features.length>0 ? "## Features" : ""}
 ${features}
 ## Contributors
-<iframe src="https://githubbadge.appspot.com/${r.user}" style="border: 0;height: 111px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
+<a href="https://github.com/${r.user}">
+  <img style="vertical-align:middle" src="https://github.com/${r.user}.png?size=50">
+  <span style="margin:auto">${user.name}</span>
+</a>
 
 ${r.badges.length>0 ? "## Dependencies" : ""}
 ${badges}

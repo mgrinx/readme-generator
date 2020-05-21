@@ -46,7 +46,7 @@ const gen =async r=> {
 
     let contributors = ""
     for(let v of contributorsRaw) {
-        contributors += `<img src="${v.html_url}.png?size=24"> <a href="${v.html_url}">${v.login}</span></a>\n`
+        contributors += `<div><img align="left" src="${v.html_url}.png?size=24">&nbsp;&nbsp;<a href="${v.html_url}">${v.login}</a></div><br>\n`
     }
 
     let readme =
